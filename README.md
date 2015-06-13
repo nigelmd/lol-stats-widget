@@ -21,9 +21,9 @@ Getting Started
 3. Configure the widget
     > Open index.coffee file
         
-        `apiKey`, can be generated [here](https://developer.riotgames.com/)  
-        `summonerName` with your summoner name  
-        `region`, default **euw**  
+    * `apiKey`, can be generated [here](https://developer.riotgames.com/)  
+    * `summonerName` with your summoner name  
+    * `region`, default **euw**  
 
 ## License
 
