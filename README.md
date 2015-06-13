@@ -1,4 +1,4 @@
-![Lol stats status widget for Übersicht](https://raw.githubusercontent.com/Xcrucifier/lol-stats-widget/master/screenshot.jpg)
+![Lol stats status widget for Übersicht](https://raw.githubusercontent.com/Xcrucifier/lol-stats-widget/master/screenshot.png)
 
 # lol-stats-widget
 An [Übersicht](http://tracesof.net/uebersicht/) widget for Mac to display your League of Legends profile and most recent match details
