@@ -6,7 +6,7 @@ An [Übersicht](http://tracesof.net/uebersicht/) widget for Mac to display your 
 Prerequisites
 -------------
 
-- <img src="http://deluge-torrent.org/images/apple-logo.gif" height="17"> **Mac OS X 10.9**
+- **Mac OS X 10.9**
 - [Übersicht](http://tracesof.net/uebersicht/)
 
 Getting Started
