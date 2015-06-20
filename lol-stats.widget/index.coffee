@@ -20,7 +20,7 @@ style: """
   font-family: Helvetica Neue
 
   .container
-    width: 750px
+    width: 770px
     /* background: rgba(204, 108, 115, 0.61) */
     height: 200px
     clear: both
