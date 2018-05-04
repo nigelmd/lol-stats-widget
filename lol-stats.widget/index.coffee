@@ -1,15 +1,15 @@
-apiKey = '' # put your api key here
+apiKey = 'RGAPI-3378179b-c04f-4841-9dcf-f4bd130435a8' # put your api key here
 summonerApiVersion = 'v1.4' # Note the v before the version number
 gamesApiVersion = 'v1.3' # Note the v before the version number
-staticApiVersion = 'v1.2' # Note the v before the version number
+staticApiVersion = 'v3' # Note the v before the version number
 ddragonApiVersion = '5.2.1'
 
 
-summonerName = '' # put your summoner name here
+summonerName = 'xcrucifier' # put your summoner name here
 
-regionName = 'euw'
+regionName = 'na1'
 
-command: "curl -s 'https://#{regionName}.api.pvp.net/api/lol/euw/#{summonerApiVersion}/summoner/by-name/#{summonerName}?api_key=#{apiKey}'"
+command: "curl -s 'https://#{regionName}.api.riotgames.com/lol/summoner/v3/summoners/by-name/#{summonerName}?api_key=#{apiKey}'"
 
 refreshFrequency: 600000
 
@@ -94,7 +94,9 @@ update: (output, domEl) ->
   $.each data, (index, element) ->
     appData["profileId"] = element.id
     $(domEl).find('.profile-icon')
-      .html("<img src='http://ddragon.leagueoflegends.com/cdn/#{appData["ddragonApiVersion"]}/img/profileicon/"+element.profileIconId+".png'>")
+      .html("<img src='http://ddragon.leagueoflegends.com/cdn/
+          #{appData["ddragonApiVersion"]}/img/profileicon/"
+        + element.profileIconId+".png'>")
     $(domEl)
       .find('.profile-id')
       .html("Profile Id: "+ element.id)
@@ -107,7 +109,9 @@ update: (output, domEl) ->
       .html("Profile Level: "+ element.summonerLevel)
       .data("profile-level", element.summonerLevel)
 
-  @run("curl -s 'https://euw.api.pvp.net/api/lol/#{appData["regionName"]}/#{appData["gamesApiVersion"]}/game/by-summoner/#{appData["profileId"]}/recent?api_key=#{appData["apiKey"]}'",(error, output) ->
+  @run("curl -s 'https://na.api.pvp.net/api/lol/#{appData["regionName"]}/
+      #{appData["gamesApiVersion"]}/game/by-summoner/#{appData["profileId"]}/
+      recent?api_key=#{appData["apiKey"]}'",(error, output) ->
     data = JSON.parse(output)
     mostRecent = data.games[0]
     appData["championId"] = mostRecent.championId
@@ -131,11 +135,15 @@ update: (output, domEl) ->
   )
 
   setTimeout ( ->
-    getChampionData("curl -s 'https://global.api.pvp.net/api/lol/static-data/#{appData["regionName"]}/#{appData["staticApiVersion"]}/champion/#{appData["championId"]}?champData=image&api_key=#{appData["apiKey"]}'",(error, output) ->
+    getChampionData("curl -s 'https://na1.api.riotgames.com/lol/static-data/
+        #{appData["staticApiVersion"]}/champions/
+        #{appData["championId"]}?champData=image&api_key=#{appData["apiKey"]}'"
+        ,(error, output) ->
       data = JSON.parse(output)
       $(domEl)
         .find('.champion-icon')
-        .html("<img src='http://ddragon.leagueoflegends.com/cdn/#{appData["ddragonApiVersion"]}/img/champion/"+data.image.full+"'>")
+        .html("<img src='http://ddragon.leagueoflegends.com/cdn/
+            #{appData["ddragonApiVersion"]}/img/champion/"+data.image.full+"'>")
     )
   ), 2000
 
