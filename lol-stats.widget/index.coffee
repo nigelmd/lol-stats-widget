@@ -1,15 +1,13 @@
-apiKey = 'RGAPI-3378179b-c04f-4841-9dcf-f4bd130435a8' # put your api key here
+apiKey = '' # put your api key here
 summonerApiVersion = 'v1.4' # Note the v before the version number
 gamesApiVersion = 'v1.3' # Note the v before the version number
 staticApiVersion = 'v3' # Note the v before the version number
-ddragonApiVersion = '5.2.1'
-
 
 summonerName = 'xcrucifier' # put your summoner name here
 
 regionName = 'na1'
 
-command: "curl -s 'https://#{regionName}.api.riotgames.com/lol/summoner/v3/summoners/by-name/#{summonerName}?api_key=#{apiKey}'"
+command: ("curl -s 'https://#{regionName}.api.riotgames.com/lol/summoner/v3/summoners/by-name/#{summonerName}?api_key=#{apiKey}'")
 
 refreshFrequency: 600000
 
@@ -91,59 +89,87 @@ update: (output, domEl) ->
   appData = @appData
   data  = JSON.parse(output)
   getChampionData = @run
-  $.each data, (index, element) ->
-    appData["profileId"] = element.id
-    $(domEl).find('.profile-icon')
-      .html("<img src='http://ddragon.leagueoflegends.com/cdn/
-          #{appData["ddragonApiVersion"]}/img/profileicon/"
-        + element.profileIconId+".png'>")
-    $(domEl)
-      .find('.profile-id')
-      .html("Profile Id: "+ element.id)
-    $(domEl)
-      .find('.profile-name')
-      .html("Profile Name: "+ element.name)
-      .data("profile-name", element.name)
-    $(domEl)
-      .find('.profile-level')
-      .html("Profile Level: "+ element.summonerLevel)
-      .data("profile-level", element.summonerLevel)
+  getMatchData = @run
+  appData["profileId"] = data.accountId
+  $(domEl).find('.profile-icon')
+    .html("<img src='http://ddragon.leagueoflegends.com/cdn/6.24.1/img/profileicon/"+data.profileIconId+".png'>")
+  $(domEl)
+    .find('.profile-id')
+    .html("Profile Id: "+ data.accountId)
+  $(domEl)
+    .find('.profile-name')
+    .html("Profile Name: "+ data.name)
+    .data("profile-name", data.name)
+  $(domEl)
+    .find('.profile-level')
+    .html("Profile Level: "+ data.summonerLevel)
+    .data("profile-level", data.summonerLevel)
 
-  @run("curl -s 'https://na.api.pvp.net/api/lol/#{appData["regionName"]}/
-      #{appData["gamesApiVersion"]}/game/by-summoner/#{appData["profileId"]}/
-      recent?api_key=#{appData["apiKey"]}'",(error, output) ->
+  #console.log(apiKey)
+  #gameId = null
+  mostRecent = null
+  matchResult = null
+  gameMode = null
+  gameType = null
+  championsKilled = null
+  deaths = null
+  assists = null
+  championId = null
+  @run("curl -s 'https://na1.api.riotgames.com/lol/match/v3/matchlists/by-account/#{appData["profileId"]}?api_key=#{apiKey}'",(error, output) ->
     data = JSON.parse(output)
-    mostRecent = data.games[0]
-    appData["championId"] = mostRecent.championId
-    matchResult = if mostRecent.stats.win then "WIN" else "LOSS"
-
-    $(domEl)
-      .find('.match-type')
-      .html("Match type: " + mostRecent.gameMode + " " + mostRecent.subType)
-    $(domEl)
-      .find('.champions-killed')
-      .html("Kills: " + mostRecent.stats.championsKilled)
-    $(domEl)
-      .find('.deaths')
-      .html("Deaths: " + mostRecent.stats.numDeaths)
-    $(domEl)
-      .find('.assists')
-      .html("Assists: " + mostRecent.stats.assists)
-    $(domEl)
-      .find('.win')
-      .html("Match Result: " + matchResult)
+    mostRecent = data.matches[0]
+    appData["gameId"] = mostRecent.gameId
+    this.gameId = mostRecent.gameId
+    appData["championId"] = championId = mostRecent.champion
   )
 
   setTimeout ( ->
-    getChampionData("curl -s 'https://na1.api.riotgames.com/lol/static-data/
-        #{appData["staticApiVersion"]}/champions/
-        #{appData["championId"]}?champData=image&api_key=#{appData["apiKey"]}'"
-        ,(error, output) ->
+    getMatchData("curl -s 'https://na1.api.riotgames.com/lol/match/v3/matches/#{gameId}?api_key=#{apiKey}'", (error, output) ->
+      #console.log(gameId)
+      data = JSON.parse(output)
+      #console.log(data)
+      gameMode = data.gameMode
+      gameType = data.gameType
+      participantId = null
+      $.each data.participantIdentities, (index, participant) ->
+        #console.log(participant)
+        if participant.player.accountId == appData["profileId"]
+          participantId = participant.participantId
+          #console.log(participantId)
+
+      $.each data.participants, (index, participant) ->
+        #console.log(participant)
+        if participant.participantId == participantId
+          championsKilled = participant.stats.kills
+          deaths = participant.stats.deaths
+          assists = participant.stats.assists
+          matchResult = if participant.stats.win then "WIN" else "LOSS"
+
+      $(domEl)
+        .find('.match-type')
+        .html("Match type: " + gameMode + " " + gameType)
+      $(domEl)
+        .find('.champions-killed')
+        .html("Kills: " + championsKilled)
+      $(domEl)
+        .find('.deaths')
+        .html("Deaths: " + deaths)
+      $(domEl)
+        .find('.assists')
+        .html("Assists: " + assists)
+      $(domEl)
+        .find('.win')
+        .html("Match Result: " + matchResult)
+    )
+  ), 2000
+
+  #console.log(championId)
+  setTimeout ( ->
+    getChampionData("curl -s 'https://na1.api.riotgames.com/lol/static-data/v3/champions/#{championId}?champData=image&api_key=#{apiKey}'" ,(error, output) ->
       data = JSON.parse(output)
       $(domEl)
         .find('.champion-icon')
-        .html("<img src='http://ddragon.leagueoflegends.com/cdn/
-            #{appData["ddragonApiVersion"]}/img/champion/"+data.image.full+"'>")
+        .html("<img src='http://ddragon.leagueoflegends.com/cdn/6.24.1/img/champion/"+data.image.full+"'>")
     )
   ), 2000
 
@@ -151,10 +177,10 @@ update: (output, domEl) ->
 appData:
   'apiKey': @apiKey
   'summonerApiVersion': @summonerApiVersion
-  'ddragonApiVersion': @ddragonApiVersion
   'gamesApiVersion': @gamesApiVersion
   'staticApiVersion': @staticApiVersion
   'regionName': @regionName
   'summonerName': @summonerName
   'profileId': 'profile-id'
   'championId': 'champion-id'
+  'gameId': 'game-id'
